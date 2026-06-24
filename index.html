@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>FreshFood</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<h2 class="sr-only">FreshFood — pantry tracker with Firebase sync, recipes, shopping list, and notifications</h2>
+
+<div class="app" id="APP">
+
+<!-- Status bar -->
+<div class="sb"><span id="device-time"></span><span id="connectivity-icon"><i class="ti ti-wifi" style="font-size:13px"></i></span></div>
+
+<!-- Top tabs: fridge, cabinet, recipes, shopping -->
+<div class="ntab-bar" id="NTAB">
+  <div class="ntab on" id="nt-fridge" onclick="goMain('fridge')"><span>Fridge</span><i class="ti ti-fridge"></i></div>
+  <div class="ntab" id="nt-cabinet" onclick="goMain('cabinet')"><span>Cabinet</span><i class="ti ti-archive"></i></div>
+  <div class="ntab" id="nt-recipes" onclick="goMain('recipes')"><span>Recipes</span><i class="ti ti-chef-hat"></i></div>
+  <div class="ntab" id="nt-shopping" onclick="goMain('shopping')"><span>Shop</span><i class="ti ti-shopping-cart"></i></div>
+</div>
+
+<div class="sbdy" id="BODY">
+
+<!-- FRIDGE -->
+<div class="scr on" id="s-fridge">
+  <div class="pad">
+    <div class="shdr"><span class="stitle">My fridge</span><button class="addbtn" onclick="showAddFood('fridge')"><i class="ti ti-plus" style="font-size:12px"></i>Add</button></div>
+    <div class="alrt" id="fridge-alert" style="background:#FAEEDA;border:0.5px solid #FAC775;display:none"><i class="ti ti-alert-triangle" style="color:#854F0B"></i><p id="fridge-alert-text" style="color:#633806"></p></div>
+    <div class="pantry-toolbar">
+      <input class="inp" id="fridge-search" type="search" placeholder="Search fridge…" aria-label="Search fridge" oninput="setFridgeSearch(this.value)">
+      <select class="inp" id="fridge-sort" aria-label="Sort fridge" onchange="setFridgeSort(this.value)">
+        <option value="expiry">Sort: expiry</option><option value="name">Sort: name</option><option value="category">Sort: category</option>
+      </select>
+      <button type="button" class="toolbar-btn" onclick="toggleBulkMode('fridge')"><i class="ti ti-checkbox"></i> Select</button>
+    </div>
+    <div class="bulk-bar" id="fridge-bulk-bar">
+      <button type="button" class="toolbar-btn" onclick="bulkDeleteSelected('fridge')">Delete</button>
+      <button type="button" class="toolbar-btn" onclick="bulkEditSelected('fridge')">Edit</button>
+      <button type="button" class="toolbar-btn" onclick="toggleBulkMode('fridge')">Cancel</button>
+    </div>
+    <div class="frow" id="fridge-pills">
+      <div class="fp on" onclick="fFilter('all',this)"><i class="ti ti-layout-grid"></i>All</div>
+      <div class="fp" onclick="fFilter('expiring',this)"><i class="ti ti-hourglass-high"></i>Expiring soon</div>
+      <div class="fp" onclick="fFilter('dairy',this)"><i class="ti ti-milk"></i>Dairy</div>
+      <div class="fp" onclick="fFilter('cheese',this)"><i class="ti ti-cheese"></i>Cheese</div>
+      <div class="fp" onclick="fFilter('produce',this)"><i class="ti ti-salad"></i>Produce</div>
+      <div class="fp" onclick="fFilter('meat',this)"><i class="ti ti-meat"></i>Meat</div>
+      <div class="fp" onclick="fFilter('leftovers',this)"><i class="ti ti-bowl"></i>Leftovers</div>
+      <div class="fp" onclick="fFilter('condiments',this)"><i class="ti ti-bottle"></i>Sauces</div>
+      <div class="fp" onclick="fFilter('eggs',this)"><i class="ti ti-egg"></i>Eggs</div>
+      <div class="fp" onclick="fFilter('seafood',this)"><i class="ti ti-fish"></i>Seafood</div>
+      <div class="fp" onclick="fFilter('beverages',this)"><i class="ti ti-glass"></i>Drinks</div>
+      <div class="fp" onclick="fFilter('frozen',this)"><i class="ti ti-snowflake"></i>Frozen</div>
+    </div>
+    <div id="fridge-list"></div>
+  </div>
+</div>
+
+<!-- CABINET -->
+<div class="scr" id="s-cabinet">
+  <div class="pad">
+    <div class="shdr"><span class="stitle">My cabinet</span><button class="addbtn" onclick="showAddFood('cabinet')"><i class="ti ti-plus" style="font-size:12px"></i>Add</button></div>
+    <div class="pantry-toolbar">
+      <input class="inp" id="cab-search" type="search" placeholder="Search cabinet…" aria-label="Search cabinet" oninput="setCabSearch(this.value)">
+      <select class="inp" id="cab-sort" aria-label="Sort cabinet" onchange="setCabSort(this.value)">
+        <option value="expiry">Sort: expiry</option><option value="name">Sort: name</option><option value="category">Sort: category</option>
+      </select>
+      <button type="button" class="toolbar-btn" onclick="toggleBulkMode('cabinet')"><i class="ti ti-checkbox"></i> Select</button>
+    </div>
+    <div class="bulk-bar" id="cab-bulk-bar">
+      <button type="button" class="toolbar-btn" onclick="bulkDeleteSelected('cabinet')">Delete</button>
+      <button type="button" class="toolbar-btn" onclick="bulkEditSelected('cabinet')">Edit</button>
+      <button type="button" class="toolbar-btn" onclick="toggleBulkMode('cabinet')">Cancel</button>
+    </div>
+    <div class="frow" id="cab-pills">
+      <div class="fp on" onclick="cFilter('all',this)"><i class="ti ti-layout-grid"></i>All</div>
+      <div class="fp" onclick="cFilter('grains',this)"><i class="ti ti-bread"></i>Grains</div>
+      <div class="fp" onclick="cFilter('canned',this)"><i class="ti ti-can"></i>Canned</div>
+      <div class="fp" onclick="cFilter('spices',this)"><i class="ti ti-pepper"></i>Spices</div>
+      <div class="fp" onclick="cFilter('pasta',this)"><i class="ti ti-noodles"></i>Pasta</div>
+      <div class="fp" onclick="cFilter('baking',this)"><i class="ti ti-cookie"></i>Baking</div>
+      <div class="fp" onclick="cFilter('dried',this)"><i class="ti ti-plant-2"></i>Dried</div>
+      <div class="fp" onclick="cFilter('oils',this)"><i class="ti ti-droplet"></i>Oils</div>
+      <div class="fp" onclick="cFilter('snacks',this)"><i class="ti ti-cookie"></i>Snacks</div>
+    </div>
+    <div id="cab-list"></div>
+  </div>
+</div>
+
+<!-- RECIPES -->
+<div class="scr" id="s-recipes">
+  <div class="pad">
+    <div class="shdr"><span class="stitle">Use it up</span><span style="font-size:12px;color:var(--txt2)">From your fridge &amp; cabinet</span></div>
+    <div class="alrt" id="rec-alert" style="background:#EAF3DE;border:0.5px solid #C0DD97;display:none"><i class="ti ti-salad" style="color:#27500A"></i><p id="rec-alert-text" style="color:#173404"></p></div>
+    <div class="frow" id="rec-pills">
+      <div class="fp on" onclick="rFilter('all',this)"><i class="ti ti-layout-grid"></i>All</div>
+      <div class="fp" onclick="rFilter('breakfast',this)"><i class="ti ti-sunrise"></i>Breakfast</div>
+      <div class="fp" onclick="rFilter('lunch',this)"><i class="ti ti-bowl"></i>Lunch</div>
+      <div class="fp" onclick="rFilter('dinner',this)"><i class="ti ti-tools-kitchen-2"></i>Dinner</div>
+      <div class="fp" onclick="rFilter('dessert',this)"><i class="ti ti-ice-cream-2"></i>Dessert</div>
+      <div class="fp" onclick="rFilter('vegetarian',this)"><i class="ti ti-leaf"></i>Vegetarian</div>
+      <div class="fp" onclick="rFilter('quick',this)"><i class="ti ti-bolt"></i>Under 15 min</div>
+      <div class="fp" onclick="rFilter('under30',this)"><i class="ti ti-clock"></i>Under 30 min</div>
+      <div class="fp" onclick="rFilter('under60',this)"><i class="ti ti-hourglass"></i>Under 1 hour</div>
+      <div class="fp" onclick="rFilter('glutenfree',this)"><i class="ti ti-wheat-off"></i>Gluten-free</div>
+      <div class="fp" onclick="rFilter('dairyfree',this)"><i class="ti ti-milk-off"></i>Dairy-free</div>
+    </div>
+    <div id="allergy-bar" style="display:flex;align-items:center;gap:8px;margin-bottom:11px;padding:9px 12px;background:var(--bg1);border-radius:10px;border:0.5px solid var(--bdr);cursor:pointer" onclick="showAllergyModal()">
+      <i class="ti ti-shield-check" style="font-size:16px;color:var(--txt2)"></i>
+      <span style="font-size:13px;color:var(--txt2);flex:1" id="allergy-label">No restrictions set</span>
+      <i class="ti ti-chevron-right" style="font-size:14px;color:var(--txt2)"></i>
+    </div>
+    <div id="rec-list"></div>
+    <p style="font-size:12px;color:var(--txt2);margin-top:7px;text-align:center"><span style="color:#A32D2D">●</span> expiring &nbsp;<span style="color:#3B6D11">●</span> in stock &nbsp;<span style="color:#888780">●</span> need to buy</p>
+  </div>
+</div>
+
+<!-- SHOPPING LIST -->
+<div class="scr" id="s-shopping">
+  <div class="pad">
+    <div class="shdr"><span class="stitle">Shopping list</span><button class="addbtn" onclick="showAddShoppingItem()"><i class="ti ti-plus" style="font-size:12px"></i>Add</button></div>
+    <p style="font-size:12px;color:var(--txt2);margin-bottom:11px">Synced to your account. Check items off or move them into your pantry.</p>
+    <div id="shopping-list"></div>
+  </div>
+</div>
+
+<!-- SCAN -->
+<div class="scr" id="s-scan">
+  <div id="scan-camera-wrap" style="background:#111;height:240px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center">
+    <video id="scan-video" playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none" aria-hidden="true"></video>
+    <div id="scan-overlay" style="position:relative;z-index:1;text-align:center;padding:12px">
+      <p id="scan-status" style="color:rgba(255,255,255,.6);font-size:13px;margin-bottom:16px">Tap below to enable camera scanning</p>
+      <div style="width:180px;height:110px;position:relative;margin:0 auto" aria-hidden="true">
+        <div style="position:absolute;top:0;left:0;width:16px;height:16px;border:3px solid #4ADE80;border-right:none;border-bottom:none"></div>
+        <div style="position:absolute;top:0;right:0;width:16px;height:16px;border:3px solid #4ADE80;border-left:none;border-bottom:none"></div>
+        <div style="position:absolute;bottom:0;left:0;width:16px;height:16px;border:3px solid #4ADE80;border-right:none;border-top:none"></div>
+        <div style="position:absolute;bottom:0;right:0;width:16px;height:16px;border:3px solid #4ADE80;border-left:none;border-top:none"></div>
+      </div>
+      <button type="button" id="scan-start-btn" onclick="startBarcodeScan()" style="margin-top:12px;background:#0C447C;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer">Enable camera</button>
+    </div>
+  </div>
+  <div class="pad" style="background:var(--bg0)">
+    <p style="font-size:14px;font-weight:500;color:var(--txt);margin-bottom:9px">Search manually</p>
+    <div style="position:relative">
+      <i class="ti ti-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--txt2)"></i>
+      <input class="inp" id="scan-search" type="text" placeholder="Search food name or brand…" style="padding-left:34px" oninput="doScanSearch(this.value)">
+    </div>
+    <div id="scan-results" class="search-results"></div>
+  </div>
+</div>
+
+<!-- ALERTS / NOTIFICATIONS -->
+<div class="scr" id="s-alerts">
+  <div style="background:#185FA5;padding:16px;display:flex;align-items:center;gap:10px">
+    <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center"><i class="ti ti-bell" style="font-size:22px;color:#fff"></i></div>
+    <div><div style="font-size:15px;font-weight:500;color:#fff">Allow notifications</div><div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px">Stay on top of expiring food</div></div>
+  </div>
+  <div style="padding:14px 15px 10px;background:var(--bg0);border-bottom:0.5px solid var(--bdr)">
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:12px;line-height:1.5">FreshFood will send reminders before your food expires so you can use it or plan meals in time.</p>
+    <div style="display:flex;gap:9px">
+      <button type="button" onclick="denyAlerts()" style="flex:1;background:var(--bg2);color:var(--txt);border:1px solid var(--bdr);border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer"><i class="ti ti-x" style="font-size:14px;margin-right:4px"></i>Not now</button>
+      <button type="button" onclick="allowAlerts()" style="flex:2;background:#0C447C;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;cursor:pointer"><i class="ti ti-bell-check" style="font-size:14px;margin-right:4px"></i>Allow notifications</button>
+    </div>
+  </div>
+  <div id="alerts-body" style="display:none">
+    <div class="slbl">In-app alerts</div>
+    <div id="in-app-notifications" style="padding:0 15px 12px"></div>
+    <div class="slbl">Notification types</div>
+    <div class="srow"><div class="srl"><div class="sico" style="background:#E6F1FB"><i class="ti ti-clock" style="color:#185FA5"></i></div><div><div class="sl">Expiry reminders</div><div class="ss">Alert before food goes bad</div></div></div><div class="tog on" id="tog-expiry" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div>
+    <div class="srow"><div class="srl"><div class="sico" style="background:#EAF3DE"><i class="ti ti-chef-hat" style="color:#27500A"></i></div><div><div class="sl">Recipe suggestions</div><div class="ss">Ideas when items expire soon</div></div></div><div class="tog on" id="tog-recipes" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div>
+    <div class="srow"><div class="srl"><div class="sico" style="background:#FAEEDA"><i class="ti ti-shopping-cart" style="color:#633806"></i></div><div><div class="sl">Shopping list</div><div class="ss">When stock runs low</div></div></div><div class="tog" id="tog-shopping" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div>
+    <div class="slbl">Remind me how far in advance</div>
+    <div id="timing-opts" style="padding:0 15px 12px"></div>
+    <div class="slbl">Quiet hours</div>
+    <div class="srow" style="border-bottom:none"><div><div class="sl">Enable quiet hours</div><div class="ss">No alerts 10 PM – 8 AM</div></div><div class="tog on" id="tog-quiet" onclick="this.classList.toggle('on')"><div class="tok"></div></div></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="scr" id="s-settings">
+  <div style="background:var(--bg0);padding:18px 15px;display:flex;align-items:center;gap:13px;border-bottom:0.5px solid var(--bdr)">
+    <div style="width:52px;height:52px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;color:#0C447C;flex-shrink:0" id="profile-avatar">?</div>
+    <div><div style="font-size:15px;font-weight:500;color:var(--txt)" id="profile-name">Guest</div><div style="font-size:12px;color:var(--txt2)" id="profile-email">Not signed in</div></div>
+  </div>
+  <div class="slbl">Appearance</div>
+  <div class="srow"><div class="srl"><div class="sico" style="background:#F1EFE8"><i class="ti ti-moon" style="color:#444441"></i></div><div><div class="sl">Dark mode</div><div class="ss" id="dark-sub">Currently light</div></div></div><div class="tog" id="dark-tog" onclick="toggleDark()"><div class="tok"></div></div></div>
+  <div class="slbl">Account</div>
+  <div class="srow" onclick="showModal('username')"><div class="srl"><div class="sico" style="background:#E6F1FB"><i class="ti ti-user" style="color:#185FA5"></i></div><div><div class="sl">Username</div><div class="ss" id="uname-display">—</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div class="srow" onclick="showModal('email')"><div class="srl"><div class="sico" style="background:#E6F1FB"><i class="ti ti-mail" style="color:#185FA5"></i></div><div><div class="sl">Email address</div><div class="ss" id="email-display">—</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div class="srow" onclick="showModal('password')"><div class="srl"><div class="sico" style="background:#E6F1FB"><i class="ti ti-lock" style="color:#185FA5"></i></div><div><div class="sl">Password</div><div class="ss">Change your password</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div class="srow" id="admin-settings-row" style="display:none" onclick="showAdminScreen()"><div class="srl"><div class="sico" style="background:#E6F1FB"><i class="ti ti-chart-bar" style="color:#185FA5"></i></div><div><div class="sl">Supervisor dashboard</div><div class="ss">Users, analytics &amp; support</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div class="slbl">Privacy &amp; data</div>
+  <div class="srow" onclick="showModal('privacy')"><div class="srl"><div class="sico" style="background:#FBEAF0"><i class="ti ti-shield" style="color:#993556"></i></div><div><div class="sl">Privacy settings</div><div class="ss">Data sharing &amp; analytics</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div class="srow" onclick="showModal('export')"><div class="srl"><div class="sico" style="background:#FBEAF0"><i class="ti ti-download" style="color:#993556"></i></div><div><div class="sl">Export my data</div><div class="ss">Download food list as PDF</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div class="srow" onclick="showModal('delete')"><div class="srl"><div class="sico" style="background:#FCEBEB"><i class="ti ti-trash" style="color:#A32D2D"></i></div><div><div class="sl">Delete account</div><div class="ss">Remove all data permanently</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div class="slbl">Help</div>
+  <div class="srow" onclick="showModal('help')"><div class="srl"><div class="sico" style="background:#EAF3DE"><i class="ti ti-book" style="color:#27500A"></i></div><div><div class="sl">How to use FreshFood</div><div class="ss">Quick guide and tips</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div class="srow" onclick="showModal('support')"><div class="srl"><div class="sico" style="background:#EAF3DE"><i class="ti ti-message-circle" style="color:#27500A"></i></div><div><div class="sl">Contact support</div><div class="ss">Get help with your account</div></div></div><i class="ti ti-chevron-right" style="color:var(--txt2);font-size:15px"></i></div>
+  <div style="padding:16px;text-align:center"><button type="button" style="font-size:13px;color:#A32D2D;cursor:pointer;font-weight:500;background:none;border:none" onclick="goAuth()">Sign out</button></div>
+</div>
+
+<!-- AUTH -->
+<div class="scr" id="s-auth">
+  <div style="padding:36px 24px 24px;text-align:center">
+    <div class="logo-mark" aria-label="FreshFood logo"><i class="ti ti-fridge"></i></div>
+    <div style="font-size:22px;font-weight:500;color:var(--txt);margin-bottom:6px">FreshFood</div>
+    <div style="font-size:14px;color:var(--txt2);margin-bottom:28px">Never let food go to waste</div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button type="button" onclick="setAuthTab('login')" id="auth-login-tab" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:500;border:none;background:#185FA5;color:#fff;cursor:pointer"><i class="ti ti-login-2" style="font-size:14px;margin-right:4px"></i>Log in</button>
+      <button type="button" onclick="setAuthTab('signup')" id="auth-signup-tab" style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:500;border:0.5px solid var(--bdr);background:var(--bg1);color:var(--txt2);cursor:pointer"><i class="ti ti-user-plus" style="font-size:14px;margin-right:4px"></i>Sign up</button>
+    </div>
+    <div id="auth-login-form">
+      <input class="inp" id="login-email" type="email" placeholder="Email address" autocomplete="email" style="margin-bottom:9px">
+      <input class="inp" id="login-password" type="password" placeholder="Password" autocomplete="current-password" style="margin-bottom:5px">
+      <label class="remember-row"><input type="checkbox" id="login-remember" checked> Remember me</label>
+      <div style="text-align:right;margin-bottom:14px"><button type="button" onclick="showForgotPassword()" style="font-size:12px;color:#185FA5;cursor:pointer;font-weight:500;background:none;border:none">Forgot password?</button></div>
+      <button type="button" onclick="doLogin()" style="width:100%;background:#185FA5;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:500;cursor:pointer"><i class="ti ti-login-2" style="font-size:15px;margin-right:5px"></i>Log in</button>
+    </div>
+    <div id="auth-signup-form" style="display:none">
+      <input class="inp" id="signup-username" type="text" placeholder="Username" autocomplete="username" style="margin-bottom:9px">
+      <input class="inp" id="signup-email" type="email" placeholder="Email address" autocomplete="email" style="margin-bottom:9px">
+      <input class="inp" id="signup-password" type="password" placeholder="Create password" autocomplete="new-password" style="margin-bottom:9px">
+      <input class="inp" id="signup-password2" type="password" placeholder="Confirm password" autocomplete="new-password" style="margin-bottom:14px">
+      <button type="button" onclick="doSignup()" style="width:100%;background:#185FA5;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:500;cursor:pointer"><i class="ti ti-user-plus" style="font-size:15px;margin-right:5px"></i>Create account</button>
+    </div>
+    <p style="font-size:12px;color:var(--txt2);margin-top:16px;line-height:1.6">By continuing you agree to our <span class="legal-link" onclick="showModal('terms')">Terms</span> and <span class="legal-link" onclick="showModal('policy')">Privacy Policy</span></p>
+  </div>
+</div>
+
+<!-- EMAIL VERIFICATION GATE -->
+<div class="scr" id="s-verify">
+  <div class="verify-box">
+    <div class="logo-mark" aria-label="FreshFood logo"><i class="ti ti-mail"></i></div>
+    <div style="font-size:18px;font-weight:500;color:var(--txt);margin-bottom:8px">Verify your email</div>
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:20px;line-height:1.55">We sent a verification link to your inbox. Confirm your email, then sign in.</p>
+    <input class="inp" id="verify-email" type="email" placeholder="Email address" style="margin-bottom:9px">
+    <input class="inp" id="verify-pass" type="password" placeholder="Password (to resend)" style="margin-bottom:14px">
+    <button type="button" onclick="resendVerificationEmail()" style="width:100%;background:#185FA5;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:10px">Resend verification email</button>
+    <button type="button" onclick="goAuthScreen()" style="width:100%;background:var(--bg1);color:var(--txt2);border:0.5px solid var(--bdr);border-radius:8px;padding:11px;font-size:13px;cursor:pointer">Back to login</button>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD (supervisors only) -->
+<div class="scr" id="s-admin">
+  <div id="admin-dashboard"></div>
+</div>
+
+</div>
+
+<!-- Bottom navigation -->
+<div class="bnav" id="BNAV">
+  <div class="btab on" id="bt-home" onclick="goBottom('home')"><span>Home</span><i class="ti ti-home"></i></div>
+  <div class="btab" id="bt-scan" onclick="goBottom('scan')"><span>Scan</span><i class="ti ti-scan"></i></div>
+  <div class="btab" id="bt-alerts" onclick="goBottom('alerts')"><span>Alerts</span><i class="ti ti-bell"></i></div>
+  <div class="btab" id="bt-settings" onclick="goBottom('settings')"><span>Settings</span><i class="ti ti-settings"></i></div>
+</div>
+
+<div id="MODAL" style="display:none" role="dialog" aria-modal="true"></div>
+
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
